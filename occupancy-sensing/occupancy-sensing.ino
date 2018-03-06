@@ -1,28 +1,62 @@
-// njerig
-// Occupancy Sensing
-// (works with PIR and reed sensor)
+/*
+ *  njerig
+ *  Occupancy Sensing
+ *  (works with PIR and reed sensor)
+*/
 
-// constants
-const int baudRate = 9600;
-const int sensorPin = 13;
-const int ledPin = 2;
+#include <ESP8266WiFi.h>
+#include <Ticker.h>
+#include <AsyncMqttClient.h>
+
+#include "config.h"
+
+/*
+   CONFIG VARS
+*/
+// name used to identify this esp8266 to mqtt broker
+const char* CLIENT_ID = client_id;
+// wifi stuff
+const char* WIFI_SSID = wifi_ssid;
+const char* WIFI_PASSWORD = wifi_password;
+// mqtt broker ip address or url
+const IPAddress MQTT_BROKER = mqtt_broker;
+const int MQTT_PORT = mqtt_port;
+// topic to subscribe to?
+const char* IN_TOPIC = in_topic;
+// topic to publish to
+const char* OUT_TOPIC = out_topic;
+
+const int BAUD_RATE = 9600;
+const int SENSOR_PIN = 13;
+const int LED_PIN = 2;
+
+AsyncMqttClient mqttClient;
+Ticker mqttReconnectTimer;
+
+WiFiEventHandler wifiConnectHandler;
+WiFiEventHandler wifiDisconnectHandler;
+Ticker wifiReconnectTimer;
 
 // initialize state vars
 int currentOccupancyState = 0;
 int lastOccupancyState = 0;
 
 void setup() {
-  Serial.begin(baudRate);
-  pinMode(sensorPin, INPUT);
-  pinMode(ledPin, OUTPUT);
-  Serial.println("PIR sensor calibrating...");
-  delay(5000);
-  Serial.println("Done.");
+  Serial.begin(BAUD_RATE);
+
+  pinMode(SENSOR_PIN, INPUT);
+  pinMode(LED_PIN, OUTPUT);
+
+  wifiAndMqttSetup();
+
   Serial.println("Motion detection starting now.");
 }
 
 void loop() {
-  currentOccupancyState = digitalRead(sensorPin);
+
+  currentOccupancyState = digitalRead(SENSOR_PIN);
+
+  publishCurrentState(currentOccupancyState);
 
   if (currentOccupancyState != lastOccupancyState) {
       if (currentOccupancyState == HIGH) {
@@ -30,8 +64,9 @@ void loop() {
       } else {
         Serial.println("vacant");
       }
-      digitalWrite(ledPin, !currentOccupancyState);   // onboard LED turns on when LOW
+      digitalWrite(LED_PIN, !currentOccupancyState);   // onboard LED turns on when LOW
   }
   // update last state
   lastOccupancyState = currentOccupancyState;
 }
+
