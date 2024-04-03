@@ -64,20 +64,19 @@ void setup() {
 }
 
 void loop() {
+ currentOccupancyState = digitalRead(SENSOR_PIN);
 
-//  currentOccupancyState = digitalRead(SENSOR_PIN);
-//
-//  publishCurrentState(currentOccupancyState);
-//
-//  if (currentOccupancyState != lastOccupancyState) {
-//      if (currentOccupancyState == HIGH) {
-//        Serial.println("occupied");
-//      } else {
-//        Serial.println("vacant");
-//      }
-//      digitalWrite(LED_PIN, !currentOccupancyState);   // onboard LED turns on when LOW
-//  }
-//  // update last state
-//  lastOccupancyState = currentOccupancyState;
+ publishCurrentState(currentOccupancyState);
+
+ if (currentOccupancyState != lastOccupancyState) {
+     if (currentOccupancyState == HIGH) {
+       Serial.println("occupied");
+     } else {
+       Serial.println("vacant");
+     }
+     digitalWrite(LED_PIN, !currentOccupancyState);   // onboard LED turns on when LOW
+ }
+ // update last state
+ lastOccupancyState = currentOccupancyState;
 }
 
