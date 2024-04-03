@@ -1,1 +1,2 @@
-occupancy-sensing/config.h
+src/config.h
+*.fzz
