@@ -4,9 +4,11 @@
  *  (works with PIR and reed sensor)
 */
 
+
 #include <ESP8266WiFi.h>
 #include <Ticker.h>
 #include <AsyncMqttClient.h>
+#include <SoftwareSerial.h>
 
 #include "config.h"
 
@@ -37,12 +39,21 @@ WiFiEventHandler wifiConnectHandler;
 WiFiEventHandler wifiDisconnectHandler;
 Ticker wifiReconnectTimer;
 
+SoftwareSerial ESPserial(2, 3);
+
 // initialize state vars
 int currentOccupancyState = 0;
 int lastOccupancyState = 0;
 
 void setup() {
   Serial.begin(BAUD_RATE);
+  ESPserial.begin(115200);
+  ESPserial.println("AT+IPR=9600");
+  delay(1000);
+  ESPserial.end();
+  ESPserial.begin(9600);
+  Serial.println("serial ready");
+  ESPserial.println("AT+GMR");
 
   pinMode(SENSOR_PIN, INPUT);
   pinMode(LED_PIN, OUTPUT);
@@ -54,19 +65,19 @@ void setup() {
 
 void loop() {
 
-  currentOccupancyState = digitalRead(SENSOR_PIN);
-
-  publishCurrentState(currentOccupancyState);
-
-  if (currentOccupancyState != lastOccupancyState) {
-      if (currentOccupancyState == HIGH) {
-        Serial.println("occupied");
-      } else {
-        Serial.println("vacant");
-      }
-      digitalWrite(LED_PIN, !currentOccupancyState);   // onboard LED turns on when LOW
-  }
-  // update last state
-  lastOccupancyState = currentOccupancyState;
+//  currentOccupancyState = digitalRead(SENSOR_PIN);
+//
+//  publishCurrentState(currentOccupancyState);
+//
+//  if (currentOccupancyState != lastOccupancyState) {
+//      if (currentOccupancyState == HIGH) {
+//        Serial.println("occupied");
+//      } else {
+//        Serial.println("vacant");
+//      }
+//      digitalWrite(LED_PIN, !currentOccupancyState);   // onboard LED turns on when LOW
+//  }
+//  // update last state
+//  lastOccupancyState = currentOccupancyState;
 }
 
